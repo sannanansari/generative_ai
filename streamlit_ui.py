@@ -1,61 +1,3 @@
-# import streamlit as st
-
-# st.set_page_config(page_title="Podcast AI Suite", layout="wide")
-
-# st.title("🎙️ Podcast AI Suite")
-
-# # Upload sections
-# col1, col2, col3 = st.columns(3)
-
-# with col1:
-#     audio_file = st.file_uploader("Upload Audio File", type=['mp3', 'wav', 'm4a'])
-# with col2:
-#     video_file = st.file_uploader("Upload Video File", type=['mp4', 'mov', 'avi'])
-# with col3:
-#     youtube_link = st.text_input("Or enter YouTube link")
-
-# st.markdown("---")
-
-# # Audio player placeholder
-# st.subheader("🎧 Audio Player")
-# if audio_file:
-#     st.audio(audio_file)
-# elif video_file:
-#     st.info("Audio will be extracted and played here after processing.")
-# elif youtube_link:
-#     st.info("Audio will be downloaded and played here after processing.")
-# else:
-#     st.write("Upload an audio/video file or enter a YouTube link to play audio here.")
-
-# st.markdown("---")
-
-# # Transcription placeholder
-# st.subheader("📝 Transcription")
-# transcription_placeholder = st.empty()
-# transcription_placeholder.text("Transcription will appear here after processing.")
-
-# # Summarization options
-# st.subheader("🧾 Summarization Options")
-# summary_type = st.radio(
-#     "Select summary format:",
-#     ("Bullet Points", "Short Summary", "Detailed Summary"),
-# )
-
-# # Summary placeholder
-# st.subheader("🗒️ Summary Output")
-# summary_placeholder = st.empty()
-# summary_placeholder.text("Summary will appear here after processing.")
-
-# st.markdown("---")
-
-# # Process button
-# process = st.button("Process")
-
-# if process:
-#     st.info("Processing started... (To be implemented)")
-
-
-
 import streamlit as st
 
 # -----------------------------
@@ -126,3 +68,71 @@ with tabs[2]:  # Future Requirement: Upload Audio
     st.subheader("🎵 Upload an Audio File")
     audio_file = st.file_uploader("Upload audio", type=["mp3", "wav"], disabled=True)
     st.info("🚧 Feature coming soon...")
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import streamlit as st
+
+# st.set_page_config(page_title="Podcast AI Suite", layout="wide")
+
+# st.title("🎙️ Podcast AI Suite")
+
+# # Upload sections
+# col1, col2, col3 = st.columns(3)
+
+# with col1:
+#     audio_file = st.file_uploader("Upload Audio File", type=['mp3', 'wav', 'm4a'])
+# with col2:
+#     video_file = st.file_uploader("Upload Video File", type=['mp4', 'mov', 'avi'])
+# with col3:
+#     youtube_link = st.text_input("Or enter YouTube link")
+
+# st.markdown("---")
+
+# # Audio player placeholder
+# st.subheader("🎧 Audio Player")
+# if audio_file:
+#     st.audio(audio_file)
+# elif video_file:
+#     st.info("Audio will be extracted and played here after processing.")
+# elif youtube_link:
+#     st.info("Audio will be downloaded and played here after processing.")
+# else:
+#     st.write("Upload an audio/video file or enter a YouTube link to play audio here.")
+
+# st.markdown("---")
+
+# # Transcription placeholder
+# st.subheader("📝 Transcription")
+# transcription_placeholder = st.empty()
+# transcription_placeholder.text("Transcription will appear here after processing.")
+
+# # Summarization options
+# st.subheader("🧾 Summarization Options")
+# summary_type = st.radio(
+#     "Select summary format:",
+#     ("Bullet Points", "Short Summary", "Detailed Summary"),
+# )
+
+# # Summary placeholder
+# st.subheader("🗒️ Summary Output")
+# summary_placeholder = st.empty()
+# summary_placeholder.text("Summary will appear here after processing.")
+
+# st.markdown("---")
+
+# # Process button
+# process = st.button("Process")
+
+# if process:
+#     st.info("Processing started... (To be implemented)")
