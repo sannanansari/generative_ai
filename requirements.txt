@@ -1,0 +1,13 @@
+yt-dlp 
+openai-whisper 
+pyannote.audio 
+torch 
+streamlit
+validators
+langchain
+youtube-transcript-api
+langchain_groq
+langchain_core 
+scikit-learn 
+langchain_community
+langchain_huggingface
