@@ -1,12 +1,12 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEndpoint
+#from langchain_huggingface import HuggingFaceEndpoint
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
 from langchain.chains.summarize import load_summarize_chain
 import streamlit as st
 import validators
+from prompt_template import summerize_template, map_prompt, combine_prompt
 
 def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     """
@@ -17,13 +17,22 @@ def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
 
     # Step 2: Split the document into smaller chunks
     chunks_documents = text_splitter(transcript)
-    print(f"Documents: {chunks_documents}")
+    #print(f"Documents: {chunks_documents}")
 
-    # # Step 4: Load the summarization chain
-    # prompt_template = PromptTemplate(
-    #     input_variables=["text"],
-    #     template="Summarize the following text: {text}"
-    # )
+    # Step 3: select the LLM
+    llm = get_llm()
+
+    # Step 4: Generate the summary
+    summarize_chain = load_summarize_chain(
+        llm,
+        chain_type="map_reduce",
+        map_prompt=map_prompt,
+        combine_prompt=combine_prompt
+    )
+    output_summary = summarize_chain.run(chunks_documents)
+    print(output_summary)
+
+    
     
     # llm = ChatGroq(model_name="groq/groq-llama-3-8b")
     # summarize_chain = load_summarize_chain(llm, chain_type=summary_type, prompt=prompt_template)
@@ -83,6 +92,11 @@ def text_splitter(full_document):
         chunk_overlap=100  # Adjust overlap as needed
     )
     return text_splitter.split_documents([full_document])
+
+def get_llm():
+    llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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")
+    return llm
+
 
 generate_yt_summerization("https://www.youtube.com/watch?v=p4pHsuEf4Ms")
 
