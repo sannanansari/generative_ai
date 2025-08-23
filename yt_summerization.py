@@ -6,12 +6,47 @@ from langchain_groq import ChatGroq
 from langchain.chains.summarize import load_summarize_chain
 import streamlit as st
 import validators
-from prompt_template import summerize_template, map_prompt, combine_prompt
+from prompt_template import summerize_template, map_prompt, combine_prompt, LINKEDIN_POST_PROMPT
+from datetime import datetime
+from langchain_core.output_parsers import StrOutputParser
+
+
+
+def generate_linkedin_post(youtube_url):
+    # Step 1:Check transcript document in the cache
+    # If not in cache then fetch from youtube
+    transcript = fetch_youtube_transcript(youtube_url)
+    chunks_documents = text_splitter(transcript)
+
+    inputs = {
+    "transcript": chunks_documents,
+    "style": "educational",
+    "tone": "professional",
+    "include_emojis": True,
+    "add_hashtags": True,
+    "hashtags_n": 6,
+    "call_to_action": True,
+    "max_chars": 3000,
+    }
+
+    llm = get_llm()
+
+    chain = LINKEDIN_POST_PROMPT | llm | StrOutputParser()
+    raw_data = chain.invoke(inputs)
+    print(raw_data)
+
+    # Step 2: Generate the content for linkedin post
+    
+    
+
 
 def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     """
     Generate a summary based on the summary_type for the given YouTube video URL.
     """
+    # Get current timestamp
+    timestamp = datetime.now()
+    print(f"Before: Current timestamp: {timestamp}")
     # Step 1: Fetch the transcript of the YouTube video
     transcript = fetch_youtube_transcript(youtube_url)
 
@@ -32,7 +67,8 @@ def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     output_summary = summarize_chain.run(chunks_documents)
     print(output_summary)
 
-    
+    timestamp = datetime.now()
+    print(f"after: Current timestamp: {timestamp}")
     
     # llm = ChatGroq(model_name="groq/groq-llama-3-8b")
     # summarize_chain = load_summarize_chain(llm, chain_type=summary_type, prompt=prompt_template)
@@ -89,16 +125,18 @@ def text_splitter(full_document):
     """ Split the full document into smaller chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,  # Adjust chunk size as needed
-        chunk_overlap=100  # Adjust overlap as needed
+        chunk_overlap=80  # Adjust overlap as needed
     )
     return text_splitter.split_documents([full_document])
 
 def get_llm():
-    llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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")
+    llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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", temperature=0.5)
     return llm
 
+#https://www.youtube.com/watch?v=p4pHsuEf4Ms
+#generate_yt_summerization("https://www.youtube.com/watch?v=3T3bR8sxnmo")
 
-generate_yt_summerization("https://www.youtube.com/watch?v=p4pHsuEf4Ms")
+generate_linkedin_post("https://www.youtube.com/watch?v=3T3bR8sxnmo")
 
 
 

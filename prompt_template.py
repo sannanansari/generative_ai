@@ -32,3 +32,25 @@ combine_prompt = PromptTemplate(
     """,
     input_variables=["text"]
 )
+
+
+LINKEDIN_POST_PROMPT = PromptTemplate.from_template(
+"""
+You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post.
+
+
+Rules:
+- Max {max_chars} characters total.
+- STYLE: {style}; TONE: {tone}
+- Include emojis if {include_emojis}.
+- If {add_hashtags}, add {hashtags_n} relevant hashtags at the end.
+- Include a call to action if {call_to_action}.
+
+
+Transcript:
+{transcript}
+
+
+Return a JSON object with keys: hook, body, cta (nullable), hashtags (array).
+"""
+)
