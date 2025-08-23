@@ -6,40 +6,47 @@ from langchain_groq import ChatGroq
 from langchain.chains.summarize import load_summarize_chain
 import streamlit as st
 import validators
-from prompt_template import summerize_template, map_prompt, combine_prompt, LINKEDIN_POST_PROMPT
+from prompt_template import LINKEDIN_POST_PROMPT, SUMMARY_PROMPT, CUSTOM_SUMMARY_PROMPT
 from datetime import datetime
 from langchain_core.output_parsers import StrOutputParser
 
 
 
 def generate_linkedin_post(youtube_url):
-    # Step 1:Check transcript document in the cache
-    # If not in cache then fetch from youtube
+
     transcript = fetch_youtube_transcript(youtube_url)
     chunks_documents = text_splitter(transcript)
-
-    inputs = {
-    "transcript": chunks_documents,
-    "style": "educational",
-    "tone": "professional",
-    "include_emojis": True,
-    "add_hashtags": True,
-    "hashtags_n": 6,
-    "call_to_action": True,
-    "max_chars": 3000,
-    }
-
+    compact_trascript = summarize_content(chunks_documents)
     llm = get_llm()
 
-    chain = LINKEDIN_POST_PROMPT | llm | StrOutputParser()
-    raw_data = chain.invoke(inputs)
+    generate_post_chain = LINKEDIN_POST_PROMPT | llm | StrOutputParser()
+
+    inputs = {
+        "transcript": compact_trascript,
+        "style": "educational",
+        "tone": "professional",
+        "include_emojis": True,
+        "add_hashtags": True,
+        "hashtags_n": 6,
+        "call_to_action": True,
+        "max_chars": 3000,
+    }
+
+    raw_data = generate_post_chain.invoke(inputs)
     print(raw_data)
 
-    # Step 2: Generate the content for linkedin post
-    
-    
+def summarize_content(chunks_documents):
+    llm = get_llm()
+    chain = SUMMARY_PROMPT | llm | StrOutputParser()
+
+    summaries = []
+    for i, chunk in enumerate(chunks_documents, 1):
+        summary = chain.invoke({"transcript_segment": chunk})
+        summaries.append(summary)
+    return " ".join(summaries)
 
 
+    
 def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     """
     Generate a summary based on the summary_type for the given YouTube video URL.
@@ -52,19 +59,24 @@ def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
 
     # Step 2: Split the document into smaller chunks
     chunks_documents = text_splitter(transcript)
-    #print(f"Documents: {chunks_documents}")
+
+    # Step 3: Summerize the each document chunks so that we can avoid pass the entire tokens to the llm
+    compact_transcript_summary = summarize_content(chunks_documents)
 
     # Step 3: select the LLM
     llm = get_llm()
 
     # Step 4: Generate the summary
-    summarize_chain = load_summarize_chain(
-        llm,
-        chain_type="map_reduce",
-        map_prompt=map_prompt,
-        combine_prompt=combine_prompt
-    )
-    output_summary = summarize_chain.run(chunks_documents)
+    generate_summary_chain = CUSTOM_SUMMARY_PROMPT | llm | StrOutputParser()
+    output_summary = generate_summary_chain.invoke({"summerized_transcript": compact_transcript_summary, "summary_type": summary_type})
+
+    # summarize_chain = load_summarize_chain(
+    #     llm,
+    #     chain_type="map_reduce",
+    #     map_prompt=map_prompt,
+    #     combine_prompt=combine_prompt
+    # )
+    # output_summary = summarize_chain.run(chunks_documents)
     print(output_summary)
 
     timestamp = datetime.now()
@@ -124,8 +136,8 @@ def convert_snippet_to_document(fetched_transcript):
 def text_splitter(full_document):
     """ Split the full document into smaller chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,  # Adjust chunk size as needed
-        chunk_overlap=80  # Adjust overlap as needed
+        chunk_size=2000,  # Adjust chunk size as needed
+        chunk_overlap=200  # Adjust overlap as needed
     )
     return text_splitter.split_documents([full_document])
 
@@ -134,9 +146,9 @@ def get_llm():
     return llm
 
 #https://www.youtube.com/watch?v=p4pHsuEf4Ms
-#generate_yt_summerization("https://www.youtube.com/watch?v=3T3bR8sxnmo")
+generate_yt_summerization("https://www.youtube.com/watch?v=3T3bR8sxnmo", summary_type="Short Summary")
 
-generate_linkedin_post("https://www.youtube.com/watch?v=3T3bR8sxnmo")
+#generate_linkedin_post("https://www.youtube.com/watch?v=3T3bR8sxnmo")
 
 
 
