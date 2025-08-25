@@ -35,24 +35,49 @@ combine_prompt = PromptTemplate(
 
 
 LINKEDIN_POST_PROMPT = PromptTemplate.from_template(
-"""
+    """
 You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post.
 
-
 Rules:
-- Max {max_chars} characters total.
-- STYLE: {style}; TONE: {tone}
-- Include emojis if {include_emojis}.
-- If {add_hashtags}, add {hashtags_n} relevant hashtags at the end.
-- Include a call to action if {call_to_action}.
+- The post must include a clear HOOK and BODY.
+- Maximum length: {max_chars} characters.
+- Writing style: {style}
+- Tone: {tone}
 
+- Emojis: {"Include emojis where appropriate." if include_emojis.lower() == "yes" else "Do not use emojis."}
+- Hashtags: {"Add up to " + str(hashtags_n) + " relevant hashtags at the end." if add_hashtags.lower() == "yes" else "Do not include hashtags."}
+- Call to Action: {"Include a call to action." if call_to_action.lower() == "yes" else "Do not include a call to action."}
 
 Transcript:
 {transcript}
 
+Return a JSON object with the following keys and Do NOT include any explanations, quotes, markdown, or code fences. 
+- hook (string)
+- body (string)
+- call_to_action (string or null)
+- hashtags (array of strings, empty if none)
 
-Return a JSON object with keys: hook, body, cta (nullable), hashtags (array).
 """
+    
+
+# """
+# You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post.
+
+
+# Rules:
+# - Max {max_chars} characters total.
+# - STYLE: {style}; TONE: {tone}
+# - Include emojis if {include_emojis}.
+# - If {add_hashtags}, add {hashtags_n} relevant hashtags at the end.
+# - Include a call to action if {call_to_action}.
+
+
+# Transcript:
+# {transcript}
+
+
+# Return a JSON object with keys : hook, body, call_to_action, and hashtags (array). Do NOT include any explanations, quotes, markdown, or code fences. 
+# """
 )
 
 SUMMARY_PROMPT = PromptTemplate.from_template(

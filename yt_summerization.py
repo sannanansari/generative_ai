@@ -9,12 +9,15 @@ import validators
 from prompt_template import LINKEDIN_POST_PROMPT, SUMMARY_PROMPT, CUSTOM_SUMMARY_PROMPT
 from datetime import datetime
 from langchain_core.output_parsers import StrOutputParser
+import json
 
 
+def generate_linkedin_post(request):
 
-def generate_linkedin_post(youtube_url):
-
-    transcript = fetch_youtube_transcript(youtube_url)
+    # Get current timestamp
+    timestamp = datetime.now()
+    print(f"Before: Current timestamp: {timestamp}")
+    transcript = fetch_youtube_transcript(request["youtube_url"])
     chunks_documents = text_splitter(transcript)
     compact_trascript = summarize_content(chunks_documents)
     llm = get_llm()
@@ -23,17 +26,22 @@ def generate_linkedin_post(youtube_url):
 
     inputs = {
         "transcript": compact_trascript,
-        "style": "educational",
-        "tone": "professional",
-        "include_emojis": True,
-        "add_hashtags": True,
+        "style": request["style"],
+        "tone": request["tone"],
+        "include_emojis": request["add_emojis"],
+        "add_hashtags": request["add_hashtags"],
         "hashtags_n": 6,
-        "call_to_action": True,
-        "max_chars": 3000,
+        "call_to_action": request["call_to_action"],
+        "max_chars": request["call_to_action"],
     }
 
+    timestamp = datetime.now()
+    print(f"after: Current timestamp: {timestamp}")
     raw_data = generate_post_chain.invoke(inputs)
-    print(raw_data)
+    linkedin_post = json.loads(raw_data)
+    print(linkedin_post)
+    return linkedin_post
+
 
 def summarize_content(chunks_documents):
     llm = get_llm()
@@ -45,8 +53,7 @@ def summarize_content(chunks_documents):
         summaries.append(summary)
     return " ".join(summaries)
 
-
-    
+ 
 def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     """
     Generate a summary based on the summary_type for the given YouTube video URL.
@@ -82,13 +89,7 @@ def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     timestamp = datetime.now()
     print(f"after: Current timestamp: {timestamp}")
     
-    # llm = ChatGroq(model_name="groq/groq-llama-3-8b")
-    # summarize_chain = load_summarize_chain(llm, chain_type=summary_type, prompt=prompt_template)
-
-    # # Step 5: Generate the summary
-    # summary = summarize_chain.run(chunks_documents)
-    
-    #return summary
+    return output_summary
 
 
 def fetch_youtube_transcript(youtube_url):
@@ -120,6 +121,7 @@ def validate_youtube_url(youtube_url):
         st.error(f"Error validating YouTube URL: {str(e)}")
         raise Exception("Invalid YouTube URL format.")
 
+
 def convert_snippet_to_document(fetched_transcript):
     """ Convert a text snippet to a Document object."""
     documents = []
@@ -133,6 +135,7 @@ def convert_snippet_to_document(fetched_transcript):
         full_document = Document(page_content=full_text)
     return full_document
 
+
 def text_splitter(full_document):
     """ Split the full document into smaller chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
@@ -141,14 +144,26 @@ def text_splitter(full_document):
     )
     return text_splitter.split_documents([full_document])
 
+
 def get_llm():
     llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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", temperature=0.5)
     return llm
 
 #https://www.youtube.com/watch?v=p4pHsuEf4Ms
-generate_yt_summerization("https://www.youtube.com/watch?v=3T3bR8sxnmo", summary_type="Short Summary")
+#generate_yt_summerization("https://www.youtube.com/watch?v=3T3bR8sxnmo", summary_type="Short Summary")
 
-#generate_linkedin_post("https://www.youtube.com/watch?v=3T3bR8sxnmo")
+request_data = {
+  "youtube_url": "https://www.youtube.com/watch?v=3T3bR8sxnmo",
+  "style": "Educational",
+  "tone": "Friendly",
+  "hashtags_num": 3,
+  "add_hashtags": "Yes",
+  "call_to_action": "Yes",
+  "max_words": 2000,
+  "add_emojis": "Yes"
+}
+
+generate_linkedin_post(request_data)
 
 
 
