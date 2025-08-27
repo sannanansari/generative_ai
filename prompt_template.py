@@ -34,41 +34,17 @@ combine_prompt = PromptTemplate(
 )
 
 
-LINKEDIN_POST_PROMPT = PromptTemplate.from_template(
-    """
-You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post.
-
-Rules:
-- The post must include a clear HOOK and BODY.
-- Maximum length: {max_chars} characters.
-- Writing style: {style}
-- Tone: {tone}
-
-- Emojis: {"Include emojis where appropriate." if include_emojis.lower() == "yes" else "Do not use emojis."}
-- Hashtags: {"Add up to " + str(hashtags_n) + " relevant hashtags at the end." if add_hashtags.lower() == "yes" else "Do not include hashtags."}
-- Call to Action: {"Include a call to action." if call_to_action.lower() == "yes" else "Do not include a call to action."}
-
-Transcript:
-{transcript}
-
-Return a JSON object with the following keys and Do NOT include any explanations, quotes, markdown, or code fences. 
-- hook (string)
-- body (string)
-- call_to_action (string or null)
-- hashtags (array of strings, empty if none)
-
-"""
-    
-
-# """
-# You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post.
+# LINKEDIN_POST_PROMPT = PromptTemplate.from_template(
+#     """
+# You are a LinkedIn content creator. Based on the transcript, create a LinkedIn post. 
+# Do not hallicinate. If you do not know the content just say I dont know the answer.
 
 
 # Rules:
-# - Max {max_chars} characters total.
+# - Max {max_words} words total.
 # - STYLE: {style}; TONE: {tone}
 # - Include emojis if {include_emojis}.
-# - If {add_hashtags}, add {hashtags_n} relevant hashtags at the end.
+# - If {add_hashtags}, add {hashtags_n} relevant hashtags at the end with hashtag key.
 # - Include a call to action if {call_to_action}.
 
 
@@ -78,7 +54,48 @@ Return a JSON object with the following keys and Do NOT include any explanations
 
 # Return a JSON object with keys : hook, body, call_to_action, and hashtags (array). Do NOT include any explanations, quotes, markdown, or code fences. 
 # """
+    
+# )
+
+
+
+LINKEDIN_POST_PROMPT = prompt_template = PromptTemplate(
+    input_variables=[
+        "transcript",
+        "style",
+        "tone",
+        "include_emojis",
+        "add_hashtags",
+        "hashtags_n",
+        "call_to_action",
+        "max_words",
+    ],
+    template="""
+Consider you are professional content creator. Your task is to generate a linkedin post content from below Transcript with following Instructions and fullfill the below requirements.
+
+Transcript (source material):
+{transcript}
+
+Instructions:
+- Style: {style}
+- Tone: {tone}
+- Include emojis: {include_emojis}
+- Add hashtags: {add_hashtags} (limit: {hashtags_n})
+- Call to Action: {call_to_action}
+- Maximum words: {max_words}
+
+Requirements:
+1. Create an engaging post using transcript in the specified style and tone.  
+2. Respect the maximum word limit.  
+3. If include_emojis = "Yes", add relevant emojis naturally in the content.  
+4. If add_hashtags = "Yes", generate up to {hashtags_n} relevant hashtags with hashtag key at the end.  
+5. Ensure the call-to-action is included smoothly.  
+
+Return a JSON object with keys : hook, body, call_to_action, and hashtags (array). Do NOT include any explanations, quotes, markdown, or code fences.
+"""
 )
+
+
 
 SUMMARY_PROMPT = PromptTemplate.from_template(
     """
@@ -86,7 +103,7 @@ You are an expert summarizer.
 Your task is to condense the following transcript segment into a clear, factual summary.
 
 Guidelines:
-- Keep it under 3 to 4 sentences.
+- Keep it under 7 to 8 sentences.
 - Preserve key ideas, facts, examples, and numbers.
 - Avoid unnecessary details, filler words, or repetition.
 - Do not add personal opinions or commentary.
@@ -106,9 +123,9 @@ CUSTOM_SUMMARY_PROMPT  = PromptTemplate.from_template(
     Summarize the following text based on the requested summary type.
 
     Summary Types:
-    - "Bullet Points": Return 3–6 concise bullet points capturing the main ideas.
-    - "Short Summary": Return 3–5 sentences, clear and to the point.
-    - "Detailed Summary": Return 1–2 paragraphs covering all key details, examples, and context.
+    - "Bullet Points": Return 3–4 concise bullet points capturing the main ideas.
+    - "Short Summary": Return 4–5 sentences, clear and to the point.
+    - "Detailed Summary": Return 5-6 paragraphs covering all key details, examples, and context.
 
     Guidelines:
     - Stay factual and neutral (no opinions).
@@ -124,3 +141,5 @@ CUSTOM_SUMMARY_PROMPT  = PromptTemplate.from_template(
     Summary:
     """
 )
+
+

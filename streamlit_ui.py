@@ -1,24 +1,21 @@
 import streamlit as st
 from datetime import datetime
-#from yt_summerization import generate_yt_summerization, generate_linkedin_post
+from yt_summerization import generate_yt_summerization, generate_linkedin_post
 
 
-import streamlit as st
-from datetime import datetime
+# # ================== Mock Backend Functions ==================
+# def generate_linkedin_post(youtube_url, style, tone, hashtags_num, add_hashtags, call_to_action, max_words):
+#     """Simulates LinkedIn post generation. Replace with real model call."""
+#     return {
+#         "hook": "🚀 Learn faster with AI!",
+#         "body": "In this video, we explored how to use transformers for NLP tasks...",
+#         "cta": "👉 Watch the full video now!" if call_to_action == "Yes" else None,
+#         "hashtags": ["#AI", "#MachineLearning", "#Productivity"] if add_hashtags == "Yes" else []
+#     }
 
-# ================== Mock Backend Functions ==================
-def generate_linkedin_post(youtube_url, style, tone, hashtags_num, add_hashtags, call_to_action, max_words):
-    """Simulates LinkedIn post generation. Replace with real model call."""
-    return {
-        "hook": "🚀 Learn faster with AI!",
-        "body": "In this video, we explored how to use transformers for NLP tasks...",
-        "cta": "👉 Watch the full video now!" if call_to_action == "Yes" else None,
-        "hashtags": ["#AI", "#MachineLearning", "#Productivity"] if add_hashtags == "Yes" else []
-    }
-
-def generate_summary(youtube_url):
-    """Simulates YouTube transcript summarization. Replace with real model call."""
-    return "This video explains how transformers power modern NLP tasks, covering attention, embeddings, and real-world use cases."
+# def generate_summary(youtube_url):
+#     """Simulates YouTube transcript summarization. Replace with real model call."""
+#     return "This video explains how transformers power modern NLP tasks, covering attention, embeddings, and real-world use cases."
 
 # ================== Streamlit App ==================
 st.set_page_config(page_title="AI Content Generator", layout="wide")
@@ -40,17 +37,29 @@ with tab1:
 
         with st.form("post_form"):
             youtube_url = st.text_input("Enter YouTube URL for Post")
-            style = st.selectbox("Select Style", ["-- Select Style --", "Educational", "Politics"])
-            tone = st.selectbox("Select Tone", ["-- Select Tone --", "Professional", "Polite", "Friendly"])
+            style = st.selectbox("Select Style", ["-- Select Tone --","Educational","Storytelling","Inspirational","Analytical","Political","Engagement-focused"])
+            tone = st.selectbox("Select Tone", ["Professional","Polite","Friendly","Inspirational","Humorous","Critical"])
             hashtags_num = st.number_input("Number of Hashtags", min_value=1, max_value=10, step=1)
             add_hashtags = st.radio("Add Hashtags?", ["Yes", "No"], horizontal=True)
             call_to_action = st.radio("Add Call to Action?", ["Yes", "No"], horizontal=True)
-            max_words = st.number_input("Max Word Count", min_value=50, max_value=1000, value=300, step=50)
+            add_emojis = st.radio("Add Emojis?", ["Yes", "No"], horizontal=True)
+            max_words = st.number_input("Max Word Count", min_value=50, max_value=2000, value=300, step=50)
 
             generate_post_btn = st.form_submit_button(
                 "Generate Post",
                 use_container_width=True
             )
+
+            request_data = {
+                "youtube_url": youtube_url,
+                "style": style,
+                "tone": tone,
+                "hashtags_num": hashtags_num,
+                "add_hashtags": add_hashtags,
+                "call_to_action": call_to_action,
+                "max_words": max_words,
+                "add_emojis": add_emojis
+            }
 
         # ✅ Validation after submit
         if generate_post_btn:
@@ -58,10 +67,7 @@ with tab1:
                 st.error("⚠️ Please fill all required fields before generating the post.")
             else:
                 with st.spinner("Generating LinkedIn post..."):
-                    st.session_state.linkedin_post = generate_linkedin_post(
-                        youtube_url, style, tone, hashtags_num, add_hashtags, call_to_action, max_words
-                    )
-
+                    st.session_state.linkedin_post = generate_linkedin_post(request_data)
     # RIGHT: Output Preview
     with col2:
         st.subheader("📢 Generated LinkedIn Post")
@@ -77,9 +83,9 @@ with tab1:
                 st.markdown("#### Body")
                 st.write(response["body"])
 
-                if response["cta"]:
+                if response["call_to_action"]:
                     st.markdown("#### Call To Action")
-                    st.success(response["cta"])
+                    st.success(response["call_to_action"])
 
                 if response["hashtags"]:
                     st.markdown("#### Hashtags")
@@ -103,17 +109,26 @@ with tab2:
 
     with st.form("summary_form"):
         youtube_url_summary = st.text_input("Enter YouTube URL for Summary")
+        
+        summary_type = st.radio(
+            "Choose Summary Type",
+            ["Detail Summary", "Bullet Summary", "Short Summary"]
+        )
+
         summary_btn = st.form_submit_button("Generate Summary")
 
     if summary_btn:
         if not youtube_url_summary.strip():
             st.error("❌ Please enter a YouTube URL.")
         else:
-            st.session_state.summary = generate_summary(youtube_url_summary)
+            st.session_state.summary = generate_yt_summerization(
+                youtube_url_summary, summary_type  # Pass summary type to function
+            )
 
     if "summary" in st.session_state and st.session_state.summary:
         st.subheader("📝 Generated Summary")
         st.text_area("Summary", st.session_state.summary, height=200)
+
 
 
 

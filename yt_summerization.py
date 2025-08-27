@@ -20,9 +20,11 @@ def generate_linkedin_post(request):
     transcript = fetch_youtube_transcript(request["youtube_url"])
     chunks_documents = text_splitter(transcript)
     compact_trascript = summarize_content(chunks_documents)
+    # print('============{compact_transcript}')
     llm = get_llm()
 
     generate_post_chain = LINKEDIN_POST_PROMPT | llm | StrOutputParser()
+
 
     inputs = {
         "transcript": compact_trascript,
@@ -30,14 +32,14 @@ def generate_linkedin_post(request):
         "tone": request["tone"],
         "include_emojis": request["add_emojis"],
         "add_hashtags": request["add_hashtags"],
-        "hashtags_n": 6,
+        "hashtags_n": request["hashtags_num"],
         "call_to_action": request["call_to_action"],
-        "max_chars": request["call_to_action"],
+        "max_words": request["max_words"],
     }
 
     timestamp = datetime.now()
     print(f"after: Current timestamp: {timestamp}")
-    raw_data = generate_post_chain.invoke(inputs)
+    raw_data = generate_post_chain.invoke(input=inputs)
     linkedin_post = json.loads(raw_data)
     print(linkedin_post)
     return linkedin_post
@@ -51,10 +53,11 @@ def summarize_content(chunks_documents):
     for i, chunk in enumerate(chunks_documents, 1):
         summary = chain.invoke({"transcript_segment": chunk})
         summaries.append(summary)
+    #print(f"######################{summaries}#####################")
     return " ".join(summaries)
 
  
-def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
+def generate_yt_summerization(youtube_url, summary_type):
     """
     Generate a summary based on the summary_type for the given YouTube video URL.
     """
@@ -77,13 +80,6 @@ def generate_yt_summerization(youtube_url, summary_type="bullet_points"):
     generate_summary_chain = CUSTOM_SUMMARY_PROMPT | llm | StrOutputParser()
     output_summary = generate_summary_chain.invoke({"summerized_transcript": compact_transcript_summary, "summary_type": summary_type})
 
-    # summarize_chain = load_summarize_chain(
-    #     llm,
-    #     chain_type="map_reduce",
-    #     map_prompt=map_prompt,
-    #     combine_prompt=combine_prompt
-    # )
-    # output_summary = summarize_chain.run(chunks_documents)
     print(output_summary)
 
     timestamp = datetime.now()
@@ -139,14 +135,14 @@ def convert_snippet_to_document(fetched_transcript):
 def text_splitter(full_document):
     """ Split the full document into smaller chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,  # Adjust chunk size as needed
-        chunk_overlap=200  # Adjust overlap as needed
+        chunk_size=3000,  # Adjust chunk size as needed
+        chunk_overlap=300  # Adjust overlap as needed
     )
     return text_splitter.split_documents([full_document])
 
 
 def get_llm():
-    llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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", temperature=0.5)
+    llm =ChatGroq(model="Gemma2-9b-It", groq_api_key="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", temperature=1)
     return llm
 
 #https://www.youtube.com/watch?v=p4pHsuEf4Ms
@@ -156,7 +152,7 @@ request_data = {
   "youtube_url": "https://www.youtube.com/watch?v=3T3bR8sxnmo",
   "style": "Educational",
   "tone": "Friendly",
-  "hashtags_num": 3,
+  "hashtags_num": 5,
   "add_hashtags": "Yes",
   "call_to_action": "Yes",
   "max_words": 2000,
