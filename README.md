@@ -49,16 +49,16 @@ These inputs allow the platform to generate content that is tailored to the user
 ## Follow Step to execute the application
 
 -  **Step 1. Create Virtual Environment using Conda**  
-conda crete -p <<virtual_env_folder_name>> python=<<python_version>> -y
+conda crete -p <<virtual_env_folder_name>> python=<<python_version>> -y  
 conda create -p virtual_env python==3.11 -y
 
 -  **Step 2. Activate vitual enviroment**  
-conda acitvate <<virtual_env_folder_name>>/
-conda activate virtual_env/
+conda acitvate <<virtual_env_folder_name>>/  
+conda activate virtual_env/  
 
 -  **Step 4. Install Packages**  
 pip install -r requirements.txt
 
 -  **Step 3. Run Streamlit App**  
-streamlit run <<file_name>>
-streamlit run streamlit.py
+streamlit run <<file_name>>  
+streamlit run streamlit.py  
